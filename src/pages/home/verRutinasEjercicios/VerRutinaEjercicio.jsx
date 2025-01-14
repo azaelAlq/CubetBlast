@@ -4,7 +4,7 @@ function VerRutinaEjercicio() {
   return (
     <div>
       Ver rutinas y ejercicios
-      <h1></h1>
+      <h1>Cambio desde cuenta</h1>
     </div>
   );
 }
