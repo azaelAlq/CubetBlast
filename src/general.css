@@ -1,17 +1,30 @@
 button {
-  border: 1px solid;
-  background-color: #475569; /* bg-slate-600 */
-  border-radius: 0.125rem; /* rounded-sm */
+  border: 2px solid transparent;
+  background-color: #475569; /* Slate 600 */
+  border-radius: 0.375rem; /* Rounded-md */
   color: white;
-  font-size: 25px;
+  font-size: 18px; /* Ajustado para mejor equilibrio */
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para más profundidad */
 }
 
 button:hover {
-  background-color: #f59e0b; /* bg-yellow-500 */
+  background-color: #f59e0b; /* Yellow 500 */
   color: black;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Intensificar sombra */
+  transform: translateY(-2px); /* Efecto de elevación */
 }
 
 button:active {
-  background-color: #f59e0b; /* bg-yellow-500 */
-  color: black;
+  background-color: #d97706; /* Yellow 600 */
+  color: white;
+  transform: translateY(0); /* Quitar elevación al hacer clic */
+}
+
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5); /* Foco accesible */
 }
