@@ -30,7 +30,7 @@ function Home() {
             <h3 className="text-center text-3xl font-semibold mb-3">
               Registrar
             </h3>
-            <button onClick={() => navigate("/RegistrarRutina")}>
+            <button onClick={() => navigate("/Registros")}>
               Nueva rutina o ejercicio
             </button>
             <button onClick={() => navigate("/VerRutinaEjercicio")}>

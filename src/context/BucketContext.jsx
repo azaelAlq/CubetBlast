@@ -56,15 +56,39 @@ export const BucketProvider = ({ children }) => {
           NotaRealizacion: datos.notaRealizacion,
         })
         .select();
-      console.log("lo que regresa data", data);
 
-      setEjercicios([...ejercicios, data]);
+      setEjercicios([...ejercicios, data[0]]);
 
       if (error) {
         alert("Error en crear ejercicio en la BD: " + error);
       }
     } catch (error) {
       alert("Error en el codigo para crear ejercicio: " + error);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const crearRutina = async (datos) => {
+    try {
+      setCargando(true);
+      const { error, data } = await supabase
+        .from("Rutinas")
+        .insert({
+          Nombre: datos.Nombre,
+          Ejercicios: datos.Ejercicios,
+          Preparacion: datos.Preparacion,
+          Descripcion: datos.Descripcion,
+        })
+        .select();
+
+      setRutinas([...rutinas, data[0]]);
+
+      if (error) {
+        alert("Error en crear rutina en la BD: " + error);
+      }
+    } catch (error) {
+      alert("Error en el codigo para crear rutina: " + error);
     } finally {
       setCargando(false);
     }
@@ -79,6 +103,7 @@ export const BucketProvider = ({ children }) => {
         getRutinas,
         rutinas,
         crearEjercicio,
+        crearRutina,
       }}
     >
       {children}
