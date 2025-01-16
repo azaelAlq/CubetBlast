@@ -21,7 +21,9 @@ function Home() {
       <Header />
       <div className="flex flex-col p-3 rounded gap-4 ">
         <div className="flex flex-col mt-4 gap-2">
-          <button>Iniciar entrenamiento</button>
+          <button onClick={() => navigate("/IniciarEntrenamiento")}>
+            Iniciar entrenamiento
+          </button>
           <button>Registrar entrenamiento de cardio</button>
         </div>
         <EjerciciosSemana />
