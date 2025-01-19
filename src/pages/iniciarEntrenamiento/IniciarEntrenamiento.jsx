@@ -3,6 +3,7 @@ import { BucketContext } from "../../context/BucketContext";
 import Header from "../../components/Header";
 import { useNavigate } from "react-router";
 import { supabase } from "../../supabase/client";
+import { EjercicioContext } from "../../context/EntrenamientoContext";
 
 function IniciarEntrenamiento() {
   const navigate = useNavigate();
@@ -13,7 +14,17 @@ function IniciarEntrenamiento() {
   const [filtro, setFiltro] = useState("");
   const [rutinaSeleccionada, setRutinaSeleccionada] = useState(null);
 
+  const {
+    setBolUltimoEntreno,
+    SetultimoEntrenamiento,
+    setEntrenamientoActual,
+    crearEntrenamiento,
+    setRutina,
+    getEjercicios: getEjerciciosEntrenamiento,
+  } = React.useContext(EjercicioContext);
+
   useEffect(() => {
+    getEjerciciosEntrenamiento();
     getEjercicios();
     getRutinas();
   }, []);
@@ -58,7 +69,9 @@ function IniciarEntrenamiento() {
           </div>
           <button
             className=" text-white px-4 py-2 rounded shadow"
-            onClick={() => seleccionarRutina(rutina)}
+            onClick={() => {
+              seleccionarRutina(rutina);
+            }}
           >
             Seleccionar
           </button>
@@ -81,33 +94,41 @@ function IniciarEntrenamiento() {
 
   const seleccionarRutina = (rutina) => {
     setRutinaSeleccionada(rutina);
+    SetultimoEntrenamiento({});
+    setBolUltimoEntreno(false);
+    setEntrenamientoActual({});
+
+    setRutina(rutina);
   };
 
   const Inicializar = async () => {
-    let ultimoEntrenamiento = {};
-    let bolEntreanmiento = true;
-
     try {
       const { data, error } = await supabase
         .from("Entrenamientos")
         .select("*")
         .eq("IdRutina", rutinaSeleccionada.id)
-        .order("Fecha", { ascending: false }); // Orden descendente por la columna "Fecha"
+        .order("Fecha", { ascending: false });
 
-      console.log("data:", data);
-
-      if (data.length === 0) {
-        bolEntreanmiento = false;
-      } else {
-        ultimoEntrenamiento = data[0];
-      }
       if (error) {
-        alert("Error en la BD" + error);
+        console.error("Error al obtener datos de la BD:", error);
+        alert("Error en la BD: " + error.message);
+        return;
       }
-    } catch (error) {
-      alert("Error en el codigo:" + error);
-    } finally {
+
+      if (!data || data.length === 0) {
+        setBolUltimoEntreno(false);
+        SetultimoEntrenamiento({});
+      } else {
+        setBolUltimoEntreno(true);
+        SetultimoEntrenamiento(data[0]);
+      }
+
+      navigate("/Entrenamiento");
+    } catch (err) {
+      console.error("Error en el código:", err);
+      alert("Error en el código: " + err.message);
     }
+    crearEntrenamiento(rutinaSeleccionada.id);
   };
 
   return (
@@ -134,23 +155,28 @@ function IniciarEntrenamiento() {
             <h2 className="text-2xl font-semibold mb-4 text-center">
               Rutina seleccionada:
             </h2>
-            {rutinaSeleccionada ? (
-              <div>
-                <p>
-                  <strong>ID:</strong> {rutinaSeleccionada.id}
+            <div>
+              {rutinaSeleccionada ? (
+                <>
+                  <div>
+                    <p>
+                      <strong>ID:</strong> {rutinaSeleccionada.id}
+                    </p>
+                    <p>
+                      <strong>Nombre:</strong> {rutinaSeleccionada.Nombre}
+                    </p>
+                    <p>
+                      <strong>Descripción:</strong>{" "}
+                      {rutinaSeleccionada.Descripcion}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-gray-500">
+                  No has seleccionado ninguna rutina
                 </p>
-                <p>
-                  <strong>Nombre:</strong> {rutinaSeleccionada.Nombre}
-                </p>
-                <p>
-                  <strong>Descripción:</strong> {rutinaSeleccionada.Descripcion}
-                </p>
-              </div>
-            ) : (
-              <p className="text-gray-500">
-                No has seleccionado ninguna rutina
-              </p>
-            )}
+              )}
+            </div>
             <button
               className={`mt-4 text-white px-4 py-2 rounded shadow ${
                 rutinaSeleccionada ? "" : "bg-gray-300 cursor-not-allowed"
@@ -160,6 +186,7 @@ function IniciarEntrenamiento() {
             >
               Iniciar entrenamiento
             </button>
+
             <button
               onClick={() => navigate("/")}
               className="bg-red-500 text-white px-4 py-2 rounded shadow"

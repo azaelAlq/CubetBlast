@@ -16,7 +16,7 @@ const VideoPreview = ({ url }) => {
 
   return (
     <div className="mt-1">
-      <h3 className="text-lg font-medium">Previsualización del Video</h3>
+      <h3 className="text-lg font-medium text-center">Previsualización</h3>
       {isValidUrl(url) ? (
         <div className="mt-2 aspect-w-16 aspect-h-7">
           <video
