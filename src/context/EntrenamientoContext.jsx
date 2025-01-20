@@ -26,13 +26,8 @@ export const EjercicioProvider = ({ children }) => {
 
   // Función que inicia el cronómetro
   const iniciarCronometro = () => {
+    setTiempoCronometro(0); // Reiniciar el tiempo
     setIsCorriendo(true); // Iniciar el cronómetro
-  };
-
-  // Función que reinicia el cronómetro
-  const reiniciarCronometro = () => {
-    setTiempoCronometro(0); // Reinicia el tiempo a 0
-    setIsCorriendo(false); // Detiene el cronómetro
   };
 
   // Efecto para actualizar el tiempo cada segundo si el cronómetro está corriendo
@@ -67,9 +62,6 @@ export const EjercicioProvider = ({ children }) => {
 
   // Estado para los datos del entrenamiento actual - id para guardar los datos al final
   const [entrenamientoActual, setEntrenamientoActual] = useState({});
-
-  // Estado booleano para determinar si hay un último entrenamiento
-  const [bolUltimoEntreno, setBolUltimoEntreno] = useState(false);
 
   // Estado para almacenar datos del último entrenamiento, obtenemos la nota y si es que hay un ultimo entrenamiento se guardan los datos
   const [ultimoEntrenamiento, SetultimoEntrenamiento] = useState({});
@@ -162,11 +154,6 @@ export const EjercicioProvider = ({ children }) => {
 
       // Llama a la función para manejar los datos de los ejercicios
       procesarEjerciciosRutina();
-
-      if (bolUltimoEntreno) {
-        //logica para poner el peso del ultimo entrenamiento
-        console.log(ultimoEntrenamiento);
-      }
     } catch (err) {
       console.error("Hubo un error creando el entrenamiento:", err.message);
       alert(`No se pudo crear el entrenamiento: ${err.message}`);
@@ -192,30 +179,15 @@ export const EjercicioProvider = ({ children }) => {
     }
   };
 
-  const finalizarEntrenamiento = async (tiempoTotal) => {
+  const finalizarEntrenamiento = async () => {
     if (
       confirm(
         "Has completado todos los ejercicios de la rutina. ¿Quieres finalizar?"
       )
     ) {
       try {
-        // Convertir tiempoTotal (en segundos) a formato mm:ss
-        const tiempoFormateado = formatearTiempo(tiempoCronometro);
-
-        // Loggear el tiempo y los otros datos importantes
-        console.log("Tiempo total del entrenamiento:", tiempoFormateado);
-        console.log("tiempo total en segundos: ", tiempoCronometro);
-
-        console.log("Rendimiento a subir:", rendimientoSubir);
-        console.log("Rendimiento anterior:", rendimientoAnterior);
-
-        // Ejemplo de cómo enviar estos datos a la base de datos (suponiendo supabase):
-
-        // Mostrar mensaje de éxito
-        alert("Has finalizado la rutina.");
-
-        // Aquí puedes reiniciar cualquier estado o acción necesaria
-        reiniciarCronometro(); // Reiniciar el cronómetro si es necesario
+        setIsCorriendo(false);
+        navigate("/EntrenamientoFinalizado");
       } catch (error) {
         console.error("Error al finalizar el entrenamiento:", error);
         alert(
@@ -227,9 +199,12 @@ export const EjercicioProvider = ({ children }) => {
     }
   };
 
-  const valorRendimientoActual = () => {
+  const valorRendimientoActual = async (
+    entrenamientoBol,
+    todosLosEjercicios = []
+  ) => {
     // Inicializamos rendimientoSubir
-    const rendimientoSubir = rutina.Ejercicios.map((ejercicio) => ({
+    let rendimientoSubir = rutina.Ejercicios.map((ejercicio) => ({
       idEjercicio: ejercicio, // Suponiendo que cada ejercicio tiene un id
       peso: 0, // Inicializamos en 0
       reps: 0, // Inicializamos en 0
@@ -238,19 +213,59 @@ export const EjercicioProvider = ({ children }) => {
 
     let rendimientoAnterior = [];
 
-    if (!bolUltimoEntreno) {
-      console.log("No hay entrenamiento previo.");
+    if (!entrenamientoBol) {
+      // Si no hay entrenamiento activo
       rendimientoAnterior = rutina.Ejercicios.map(() => ({
-        peso: 77, // Valor predeterminado
-        reps: 77, // Valor predeterminado
+        peso: 0, // Valor predeterminado
+        reps: 0, // Valor predeterminado
       }));
     } else {
-      // Aquí iría la lógica para cargar datos reales desde la base de datos
-      console.log("Cargando rendimiento de entrenamiento anterior...");
-      // Ejemplo de petición (comentado):
-      // rendimientoAnterior = fetchAnteriorEntreno();
+      try {
+        // Realizamos las consultas a la base de datos
+        const resultados = await Promise.all(
+          todosLosEjercicios.map(async (ejercicioID) => {
+            const { data, error } = await supabase
+              .from("Ejercicios")
+              .select("*")
+              .eq("id", ejercicioID);
+
+            if (error) {
+              console.error("Error al obtener datos de la BD:", error);
+              alert("Error en la BD: " + error.message);
+              return null; // Si hay error, devolvemos null
+            }
+
+            return data[0]; // Devolvemos el primer resultado
+          })
+        );
+
+        // Filtramos los resultados no válidos (null)
+        const datosValidos = resultados.filter((dato) => dato !== null);
+
+        // Actualizamos rendimientoSubir dinámicamente
+        datosValidos.forEach((ejercicioData) => {
+          const index = rendimientoSubir.findIndex(
+            (item) => item.idEjercicio === ejercicioData.id
+          );
+
+          if (index !== -1) {
+            rendimientoSubir[index].peso = ejercicioData.Peso || 0;
+            rendimientoSubir[index].reps = ejercicioData.Reps || 0;
+            rendimientoSubir[index].modificado = true;
+          }
+        });
+
+        // Si necesitas rendimientoAnterior basado en datos obtenidos:
+        rendimientoAnterior = datosValidos.map((ejercicioData) => ({
+          peso: ejercicioData.Peso || 0,
+          reps: ejercicioData.Reps || 0,
+        }));
+      } catch (error) {
+        console.log("Error en la búsqueda de los ejercicios: ", error);
+      }
     }
 
+    // Establecemos los nuevos valores
     setRendimientoSubir(rendimientoSubir);
     setRendimientoAnterior(rendimientoAnterior);
   };
@@ -398,14 +413,9 @@ export const EjercicioProvider = ({ children }) => {
     }
   };
 
-  const ver = () => {
-    console.log("yo: ", rendimientoSubir);
-  };
-
   return (
     <EjercicioContext.Provider
       value={{
-        setBolUltimoEntreno,
         SetultimoEntrenamiento,
         setEntrenamientoActual,
         crearEntrenamiento,
@@ -421,14 +431,18 @@ export const EjercicioProvider = ({ children }) => {
         setRendimientoAnterior,
         valorRendimientoActual,
         setNumEjercicio,
-        bolUltimoEntreno,
-        ver,
         tiempoCronometro,
         iniciarCronometro,
         formatearTiempo,
         numEjercicio,
         ejercicios,
         rutina,
+        tiempoCronometro,
+        rendimientoSubir,
+        formatearTiempo,
+        rendimientoAnterior,
+        setIsCorriendo,
+        ultimoEntrenamiento,
       }}
     >
       {children}

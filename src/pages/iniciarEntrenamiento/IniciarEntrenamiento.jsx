@@ -20,9 +20,9 @@ function IniciarEntrenamiento() {
     setRutina,
     getEjercicios: getEjerciciosEntrenamiento,
     valorRendimientoActual,
-    setBolUltimoEntreno,
     SetultimoEntrenamiento,
-    bolUltimoEntreno,
+
+    ultimoEntrenamiento,
     setNumEjercicio,
     setDatoCambia,
     setRendimientoSubir,
@@ -106,8 +106,8 @@ function IniciarEntrenamiento() {
 
   const Inicializar = async () => {
     try {
+      let bolEntrenamiento = false;
       // Reiniciar valores antes de cargar la nueva rutina
-      setBolUltimoEntreno(false);
       SetultimoEntrenamiento({});
       setNumEjercicio(0);
       setRendimientoSubir([]);
@@ -138,48 +138,99 @@ function IniciarEntrenamiento() {
         return;
       }
 
+      const pasos = rutinaSeleccionada.Preparacion.join("\n"); // Une los pasos con un salto de línea
+
       if (data.length === 0) {
-        setBolUltimoEntreno(false);
         SetultimoEntrenamiento({});
+        alert(
+          `No hay entrenamiento anterior para cargar, registra todo bien.\n\nPasos a seguir:\n${pasos}`
+        );
+        // Configurar el primer ejercicio
+        const primerEjercicio = rutinaSeleccionada.Ejercicios[0];
+
+        const rendimientoAnteriorPrimer = bolEntrenamiento
+          ? data[0]?.Rendimiento.find(
+              (item) => item.idEjercicio === primerEjercicio
+            ) || { peso: 0, reps: 0 }
+          : { peso: 0, reps: 0 }; // Valores predeterminados si no hay datos previos
+
+        setDatoCambia({
+          pesoActual: "",
+          pesoAnterior: rendimientoAnteriorPrimer.peso || 0,
+          repeticionesActual: "",
+          repeticionesAnteriores: rendimientoAnteriorPrimer.reps || 0,
+          preparacion: "",
+          nombreEjercicio:
+            ejercicios.find((e) => e.id === primerEjercicio)?.Nombre || "",
+          agarre:
+            ejercicios.find((e) => e.id === primerEjercicio)?.TipAgarre || "",
+          material:
+            ejercicios.find((e) => e.id === primerEjercicio)?.Material || "",
+          nota:
+            ejercicios.find((e) => e.id === primerEjercicio)?.NotaRealizacion ||
+            "",
+          imagen:
+            ejercicios.find((e) => e.id === primerEjercicio)?.URLvideo || "",
+        });
+        valorRendimientoActual(bolEntrenamiento);
       } else {
-        setBolUltimoEntreno(true);
+        let primerPeso = 0;
+        let primerRep = 0;
+        alert(
+          `Tienes un entrenamiento anterior, la nota es:.\n\nPasos a seguir:\n${pasos}`
+        );
+        bolEntrenamiento = true;
+
         SetultimoEntrenamiento(data[0]);
+        try {
+          const { data: primerejercicio, error } = await supabase
+            .from("Ejercicios")
+            .select("*")
+            .eq("id", data[0].Rendimiento[0]);
+          primerPeso = primerejercicio[0].Peso;
+          primerRep = primerejercicio[0].Reps;
+          if (error) {
+            console.log("Error al obtener datos de la BD:", error);
+          }
+        } catch (error) {
+          console.error("Error en el código:", error);
+          alert("Error en el código: " + error.message);
+        }
+
+        // Configurar el primer ejercicio cuando hay coso
+        const primerEjercicio = rutinaSeleccionada.Ejercicios[0];
+        const rendimientoAnteriorPrimer = bolEntrenamiento
+          ? data[0]?.Rendimiento.find(
+              (item) => item.idEjercicio === primerEjercicio
+            ) || { peso: primerPeso, reps: primerRep }
+          : { peso: 77, reps: 77 }; // Valores predeterminados si no hay datos previos
+        setDatoCambia({
+          pesoActual: "",
+          pesoAnterior: rendimientoAnteriorPrimer.peso || 0,
+          repeticionesActual: "",
+          repeticionesAnteriores: rendimientoAnteriorPrimer.reps || 0,
+          preparacion: "",
+          nombreEjercicio:
+            ejercicios.find((e) => e.id === primerEjercicio)?.Nombre || "",
+          agarre:
+            ejercicios.find((e) => e.id === primerEjercicio)?.TipAgarre || "",
+          material:
+            ejercicios.find((e) => e.id === primerEjercicio)?.Material || "",
+          nota:
+            ejercicios.find((e) => e.id === primerEjercicio)?.NotaRealizacion ||
+            "",
+          imagen:
+            ejercicios.find((e) => e.id === primerEjercicio)?.URLvideo || "",
+        });
+        valorRendimientoActual(bolEntrenamiento, data[0].Rendimiento);
       }
 
       // Iniciar cronómetro al empezar el entrenamiento
       iniciarCronometro();
 
       // Inicializar el rendimiento actual y navegar
-      valorRendimientoActual();
       navigate("/Entrenamiento");
       crearEntrenamiento(rutinaSeleccionada.id);
-
-      // Configurar el primer ejercicio
-      const primerEjercicio = rutinaSeleccionada.Ejercicios[0];
-      const rendimientoAnteriorPrimer = bolUltimoEntreno
-        ? data[0]?.rendimientos.find(
-            (item) => item.idEjercicio === primerEjercicio
-          ) || { peso: 0, reps: 0 }
-        : { peso: 77, reps: 77 }; // Valores predeterminados si no hay datos previos
-
-      setDatoCambia({
-        pesoActual: "",
-        pesoAnterior: rendimientoAnteriorPrimer.peso || 0,
-        repeticionesActual: "",
-        repeticionesAnteriores: rendimientoAnteriorPrimer.reps || 0,
-        preparacion: "",
-        nombreEjercicio:
-          ejercicios.find((e) => e.id === primerEjercicio)?.Nombre || "",
-        agarre:
-          ejercicios.find((e) => e.id === primerEjercicio)?.TipAgarre || "",
-        material:
-          ejercicios.find((e) => e.id === primerEjercicio)?.Material || "",
-        nota:
-          ejercicios.find((e) => e.id === primerEjercicio)?.NotaRealizacion ||
-          "",
-        imagen:
-          ejercicios.find((e) => e.id === primerEjercicio)?.URLvideo || "",
-      });
     } catch (err) {
       console.error("Error en el código:", err);
       alert("Error en el código: " + err.message);

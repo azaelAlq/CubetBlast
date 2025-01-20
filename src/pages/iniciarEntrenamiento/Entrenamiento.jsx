@@ -1,12 +1,9 @@
 import React from "react";
 import VideoPreview from "../../components/VideoPreview";
 import { EjercicioContext } from "../../context/EntrenamientoContext";
-import { useNavigate } from "react-router";
 import CuentaAtras from "../../components/CuentaAtras";
 
 function Entrenamiento() {
-  const Navigate = useNavigate();
-
   const {
     tiempoCronometro,
     eliminarEntrenamiento,
@@ -15,7 +12,6 @@ function Entrenamiento() {
     datoCambia,
     cargandoImagen,
     setDatoCambia,
-    ver,
     formatearTiempo,
     numEjercicio,
     ejercicios,
@@ -268,12 +264,6 @@ function Entrenamiento() {
                 onClick={siguienteEjercicio}
               >
                 Siguiente ejercicio
-              </button>
-              <button
-                className="bg-gray-300 px-4 py-2 rounded-lg shadow hover:bg-gray-400"
-                onClick={ver}
-              >
-                ver
               </button>
             </div>
           </div>
