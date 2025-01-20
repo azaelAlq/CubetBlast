@@ -19,6 +19,8 @@ export const EjercicioProvider = ({ children }) => {
   // Estado para almacenar la rutina actual
   const [rutina, setRutina] = useState({});
 
+  const [tiempoCronometro, settiempoCronometro] = useState(0);
+
   //-------------------------------------------------------------------
   //este es la data de del entrenamiento, con este tenemos que obtener el id para guardar todo
 
@@ -378,6 +380,7 @@ export const EjercicioProvider = ({ children }) => {
         setNumEjercicio,
         bolUltimoEntreno,
         ver,
+        tiempoCronometro,
       }}
     >
       {children}

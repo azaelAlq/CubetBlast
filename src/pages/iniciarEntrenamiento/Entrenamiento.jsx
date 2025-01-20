@@ -2,6 +2,7 @@ import React from "react";
 import VideoPreview from "../../components/VideoPreview";
 import { EjercicioContext } from "../../context/EntrenamientoContext";
 import { useNavigate } from "react-router";
+import CuentaAtras from "../../components/CuentaAtras";
 
 function Entrenamiento() {
   const Navigate = useNavigate();
@@ -127,15 +128,28 @@ function Entrenamiento() {
         {/* Columna izquierda (Previsualización y Tiempo) */}
         <div className="flex flex-col gap-6">
           {/* Sección de Tiempo */}
-          <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg shadow-lg">
-            <p className="text-2xl font-bold text-center">Cronómetro: 10:11</p>
-            <div className="flex gap-4 justify-center mt-6">
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600">
-                Descanso 2:00
-              </button>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600">
-                Descanso 5:00
-              </button>
+          <div className="p-6 bg-white border border-gray-300 rounded-lg shadow-md">
+            <div className="text-center">
+              <p className="text-3xl font-semibold text-gray-800">Cronómetro</p>
+              <p className="text-4xl font-bold text-blue-600 mt-2">
+                {tiempoCronometro}
+              </p>
+            </div>
+
+            <div className="mt-1 text-center">
+              <p className="font-semibold text-gray-700">Descanso:</p>
+              <div className="flex gap-6 justify-center">
+                <CuentaAtras value="5:00" />
+                <CuentaAtras value="2:30" />
+              </div>
+            </div>
+
+            <div className="mt-6 text-center text-sm text-gray-500">
+              <p>
+                <span className="font-semibold">Clic</span> para iniciar |
+                <span className="font-semibold"> Clic derecho</span> para
+                reiniciar
+              </p>
             </div>
           </div>
 
