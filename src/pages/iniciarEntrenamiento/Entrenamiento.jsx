@@ -8,6 +8,7 @@ function Entrenamiento() {
   const Navigate = useNavigate();
 
   const {
+    tiempoCronometro,
     eliminarEntrenamiento,
     anteriorEjercicio,
     siguienteEjercicio,
@@ -15,6 +16,10 @@ function Entrenamiento() {
     cargandoImagen,
     setDatoCambia,
     ver,
+    formatearTiempo,
+    numEjercicio,
+    ejercicios,
+    rutina,
   } = React.useContext(EjercicioContext);
 
   function calculateWeightOptions(totalWeight) {
@@ -118,7 +123,7 @@ function Entrenamiento() {
             Rutina de {`espalda`}
           </h1>
           <p className="text-sm lg:text-xl font-mono">
-            Ejercicios restantes 9/15
+            {numEjercicio + 1} de {rutina.Ejercicios.length}
           </p>
         </div>
       </header>
@@ -132,7 +137,7 @@ function Entrenamiento() {
             <div className="text-center">
               <p className="text-3xl font-semibold text-gray-800">Cronómetro</p>
               <p className="text-4xl font-bold text-blue-600 mt-2">
-                {tiempoCronometro}
+                {formatearTiempo(tiempoCronometro)}
               </p>
             </div>
 
@@ -204,24 +209,6 @@ function Entrenamiento() {
               <div className="flex flex-wrap justify-around items-center gap-4">
                 <div className="flex flex-col gap-2">
                   <p className="text-center font-semibold text-lg">
-                    Peso en kilos
-                  </p>
-                  <input
-                    type="number"
-                    placeholder={"Meta: " + datoCambia.pesoAnterior}
-                    className="text-center border border-gray-300 rounded-lg px-2 py-1 focus:ring focus:ring-blue-200"
-                    value={datoCambia.pesoActual} // Vincula el input con el valor del estado
-                    onChange={(e) =>
-                      setDatoCambia((prev) => ({
-                        ...prev,
-                        pesoActual:
-                          e.target.value !== "" ? Number(e.target.value) : "", // Permite vaciar el campo si el input está vacío
-                      }))
-                    }
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p className="text-center font-semibold text-lg">
                     Repeticiones
                   </p>
                   <input
@@ -233,6 +220,24 @@ function Entrenamiento() {
                       setDatoCambia((prev) => ({
                         ...prev,
                         repeticionesActual:
+                          e.target.value !== "" ? Number(e.target.value) : "", // Permite vaciar el campo si el input está vacío
+                      }))
+                    }
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <p className="text-center font-semibold text-lg">
+                    Peso en kilos
+                  </p>
+                  <input
+                    type="number"
+                    placeholder={"Meta: " + datoCambia.pesoAnterior}
+                    className="text-center border border-gray-300 rounded-lg px-2 py-1 focus:ring focus:ring-blue-200"
+                    value={datoCambia.pesoActual} // Vincula el input con el valor del estado
+                    onChange={(e) =>
+                      setDatoCambia((prev) => ({
+                        ...prev,
+                        pesoActual:
                           e.target.value !== "" ? Number(e.target.value) : "", // Permite vaciar el campo si el input está vacío
                       }))
                     }

@@ -15,6 +15,7 @@ function IniciarEntrenamiento() {
   const [rutinaSeleccionada, setRutinaSeleccionada] = useState(null);
 
   const {
+    iniciarCronometro,
     crearEntrenamiento,
     setRutina,
     getEjercicios: getEjerciciosEntrenamiento,
@@ -144,6 +145,9 @@ function IniciarEntrenamiento() {
         setBolUltimoEntreno(true);
         SetultimoEntrenamiento(data[0]);
       }
+
+      // Iniciar cronómetro al empezar el entrenamiento
+      iniciarCronometro();
 
       // Inicializar el rendimiento actual y navegar
       valorRendimientoActual();

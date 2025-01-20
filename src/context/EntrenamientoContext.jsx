@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createContext } from "react";
 import { supabase } from "../supabase/client";
 import { useNavigate } from "react-router";
@@ -8,6 +8,46 @@ export const EjercicioContext = createContext();
 export const EjercicioProvider = ({ children }) => {
   const navigate = useNavigate();
 
+  //-------------------------------------------------------------------
+
+  // Estado global para el tiempo transcurrido del cronómetro
+  const [tiempoCronometro, setTiempoCronometro] = useState(0);
+  const [isCorriendo, setIsCorriendo] = useState(false); // Controla si el cronómetro está en ejecución
+
+  // Función para formatear el tiempo en formato mm:ss
+  const formatearTiempo = (tiempo) => {
+    const minutos = Math.floor(tiempo / 60);
+    const segundos = tiempo % 60;
+    return `${String(minutos).padStart(2, "0")}:${String(segundos).padStart(
+      2,
+      "0"
+    )}`;
+  };
+
+  // Función que inicia el cronómetro
+  const iniciarCronometro = () => {
+    setIsCorriendo(true); // Iniciar el cronómetro
+  };
+
+  // Función que reinicia el cronómetro
+  const reiniciarCronometro = () => {
+    setTiempoCronometro(0); // Reinicia el tiempo a 0
+    setIsCorriendo(false); // Detiene el cronómetro
+  };
+
+  // Efecto para actualizar el tiempo cada segundo si el cronómetro está corriendo
+  useEffect(() => {
+    let intervalo;
+    if (isCorriendo) {
+      intervalo = setInterval(() => {
+        setTiempoCronometro((prev) => prev + 1); // Incrementa el tiempo por cada segundo
+      }, 1000);
+    } else if (!isCorriendo && tiempoCronometro !== 0) {
+      clearInterval(intervalo); // Detiene el intervalo cuando el cronómetro se detiene
+    }
+    return () => clearInterval(intervalo); // Limpiar el intervalo cuando se desmonte el componente
+  }, [isCorriendo]);
+  //-------------------------------------------------------------------
   //datos para cargar o mejorar la experiencia ------------------------
   // Estado para gestionar la carga de imágenes
   const [cargandoImagen, setCargandoImagen] = useState(false);
@@ -18,8 +58,6 @@ export const EjercicioProvider = ({ children }) => {
 
   // Estado para almacenar la rutina actual
   const [rutina, setRutina] = useState({});
-
-  const [tiempoCronometro, settiempoCronometro] = useState(0);
 
   //-------------------------------------------------------------------
   //este es la data de del entrenamiento, con este tenemos que obtener el id para guardar todo
@@ -161,15 +199,23 @@ export const EjercicioProvider = ({ children }) => {
       )
     ) {
       try {
-        console.log("Tiempo total del entrenamiento:", tiempoTotal);
+        // Convertir tiempoTotal (en segundos) a formato mm:ss
+        const tiempoFormateado = formatearTiempo(tiempoCronometro);
+
+        // Loggear el tiempo y los otros datos importantes
+        console.log("Tiempo total del entrenamiento:", tiempoFormateado);
+        console.log("tiempo total en segundos: ", tiempoCronometro);
+
         console.log("Rendimiento a subir:", rendimientoSubir);
         console.log("Rendimiento anterior:", rendimientoAnterior);
 
-        // Implementa la lógica de guardar el tiempo y datos aquí
-        // Ejemplo: enviar a la base de datos
-        // await supabase.from("Entrenamientos").insert({ tiempoTotal, ...otrosDatos });
+        // Ejemplo de cómo enviar estos datos a la base de datos (suponiendo supabase):
 
+        // Mostrar mensaje de éxito
         alert("Has finalizado la rutina.");
+
+        // Aquí puedes reiniciar cualquier estado o acción necesaria
+        reiniciarCronometro(); // Reiniciar el cronómetro si es necesario
       } catch (error) {
         console.error("Error al finalizar el entrenamiento:", error);
         alert(
@@ -244,7 +290,6 @@ export const EjercicioProvider = ({ children }) => {
       const idEjercicio = rutina.Ejercicios[nuevoNumEjercicio];
       const ejercicio = ejercicios.find((e) => e.id === idEjercicio);
       const rendimientoSiguiente = rendimientoSubir[nuevoNumEjercicio];
-
       setDatoCambia({
         ...datoCambia,
         nombreEjercicio: ejercicio?.Nombre || "",
@@ -262,7 +307,6 @@ export const EjercicioProvider = ({ children }) => {
         repeticionesAnteriores:
           rendimientoAnterior[nuevoNumEjercicio]?.reps || 0,
       });
-
       setNumEjercicio(nuevoNumEjercicio);
     } else {
       // Guardar datos del último ejercicio antes de finalizar
@@ -348,7 +392,6 @@ export const EjercicioProvider = ({ children }) => {
         repeticionesAnteriores:
           rendimientoAnterior[nuevoNumEjercicio]?.reps || 0,
       });
-
       setNumEjercicio(nuevoNumEjercicio);
     } else {
       alert("Estás en el primer ejercicio, no puedes retroceder más.");
@@ -381,6 +424,11 @@ export const EjercicioProvider = ({ children }) => {
         bolUltimoEntreno,
         ver,
         tiempoCronometro,
+        iniciarCronometro,
+        formatearTiempo,
+        numEjercicio,
+        ejercicios,
+        rutina,
       }}
     >
       {children}
