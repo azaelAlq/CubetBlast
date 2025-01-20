@@ -9,6 +9,7 @@ import Entrenamiento from "./pages/iniciarEntrenamiento/Entrenamiento.jsx";
 import VerRutinaEjercicio from "./pages/verRutinasEjercicios/VerRutinaEjercicio.jsx";
 import { BucketProvider } from "./context/BucketContext.jsx";
 import { EjercicioProvider } from "./context/EntrenamientoContext.jsx";
+import EntrenamientoFinalizado from "./pages/iniciarEntrenamiento/EntrenamientoFinalizado.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -27,6 +28,14 @@ createRoot(document.getElementById("root")).render(
             element={
               <EjercicioProvider>
                 <IniciarEntrenamiento />
+              </EjercicioProvider>
+            }
+          />
+          <Route
+            path="/EntrenamientoFinalizado"
+            element={
+              <EjercicioProvider>
+                <EntrenamientoFinalizado />
               </EjercicioProvider>
             }
           />

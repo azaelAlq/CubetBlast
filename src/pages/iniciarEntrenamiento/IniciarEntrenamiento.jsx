@@ -15,12 +15,17 @@ function IniciarEntrenamiento() {
   const [rutinaSeleccionada, setRutinaSeleccionada] = useState(null);
 
   const {
-    setBolUltimoEntreno,
-    SetultimoEntrenamiento,
-    setEntrenamientoActual,
     crearEntrenamiento,
     setRutina,
     getEjercicios: getEjerciciosEntrenamiento,
+    valorRendimientoActual,
+    setBolUltimoEntreno,
+    SetultimoEntrenamiento,
+    bolUltimoEntreno,
+    setNumEjercicio,
+    setDatoCambia,
+    setRendimientoSubir,
+    setRendimientoAnterior,
   } = React.useContext(EjercicioContext);
 
   useEffect(() => {
@@ -95,14 +100,31 @@ function IniciarEntrenamiento() {
   const seleccionarRutina = (rutina) => {
     setRutinaSeleccionada(rutina);
     SetultimoEntrenamiento({});
-    setBolUltimoEntreno(false);
-    setEntrenamientoActual({});
-
     setRutina(rutina);
   };
 
   const Inicializar = async () => {
     try {
+      // Reiniciar valores antes de cargar la nueva rutina
+      setBolUltimoEntreno(false);
+      SetultimoEntrenamiento({});
+      setNumEjercicio(0);
+      setRendimientoSubir([]);
+      setRendimientoAnterior([]);
+      setDatoCambia({
+        pesoActual: "",
+        pesoAnterior: 0,
+        repeticionesActual: "",
+        repeticionesAnteriores: 0,
+        preparacion: "",
+        nombreEjercicio: "",
+        agarre: "",
+        material: "",
+        nota: "",
+        imagen: "",
+      });
+
+      // Obtener datos del último entrenamiento
       const { data, error } = await supabase
         .from("Entrenamientos")
         .select("*")
@@ -115,7 +137,7 @@ function IniciarEntrenamiento() {
         return;
       }
 
-      if (!data || data.length === 0) {
+      if (data.length === 0) {
         setBolUltimoEntreno(false);
         SetultimoEntrenamiento({});
       } else {
@@ -123,12 +145,41 @@ function IniciarEntrenamiento() {
         SetultimoEntrenamiento(data[0]);
       }
 
+      // Inicializar el rendimiento actual y navegar
+      valorRendimientoActual();
       navigate("/Entrenamiento");
+      crearEntrenamiento(rutinaSeleccionada.id);
+
+      // Configurar el primer ejercicio
+      const primerEjercicio = rutinaSeleccionada.Ejercicios[0];
+      const rendimientoAnteriorPrimer = bolUltimoEntreno
+        ? data[0]?.rendimientos.find(
+            (item) => item.idEjercicio === primerEjercicio
+          ) || { peso: 0, reps: 0 }
+        : { peso: 77, reps: 77 }; // Valores predeterminados si no hay datos previos
+
+      setDatoCambia({
+        pesoActual: "",
+        pesoAnterior: rendimientoAnteriorPrimer.peso || 0,
+        repeticionesActual: "",
+        repeticionesAnteriores: rendimientoAnteriorPrimer.reps || 0,
+        preparacion: "",
+        nombreEjercicio:
+          ejercicios.find((e) => e.id === primerEjercicio)?.Nombre || "",
+        agarre:
+          ejercicios.find((e) => e.id === primerEjercicio)?.TipAgarre || "",
+        material:
+          ejercicios.find((e) => e.id === primerEjercicio)?.Material || "",
+        nota:
+          ejercicios.find((e) => e.id === primerEjercicio)?.NotaRealizacion ||
+          "",
+        imagen:
+          ejercicios.find((e) => e.id === primerEjercicio)?.URLvideo || "",
+      });
     } catch (err) {
       console.error("Error en el código:", err);
       alert("Error en el código: " + err.message);
     }
-    crearEntrenamiento(rutinaSeleccionada.id);
   };
 
   return (

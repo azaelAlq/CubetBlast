@@ -2,22 +2,18 @@ import React from "react";
 import VideoPreview from "../../components/VideoPreview";
 import { EjercicioContext } from "../../context/EntrenamientoContext";
 import { useNavigate } from "react-router";
-import { useState } from "react";
 
 function Entrenamiento() {
-  const video =
-    "https://media.musclewiki.com/media/uploads/videos/branded/male-Barbell-barbell-squat-side.mp4#t=0.1";
-
   const Navigate = useNavigate();
-
-  const [pesoActual, setPesoActual] = useState("");
-  const [repesAnteriores, setRepesAnteriores] = useState("");
 
   const {
     eliminarEntrenamiento,
     anteriorEjercicio,
     siguienteEjercicio,
     datoCambia,
+    cargandoImagen,
+    setDatoCambia,
+    ver,
   } = React.useContext(EjercicioContext);
 
   function calculateWeightOptions(totalWeight) {
@@ -145,7 +141,11 @@ function Entrenamiento() {
 
           {/* Sección de Previsualización */}
           <div className="flex-1 px-4 bg-gray-50 border border-gray-200 rounded-lg shadow-lg flex justify-center items-center">
-            <VideoPreview url={datoCambia.imagen} />
+            {cargandoImagen ? (
+              <p>Cargando...</p>
+            ) : (
+              <VideoPreview url={datoCambia.imagen} />
+            )}
           </div>
 
           {/* Botón Finalizar Entrenamiento */}
@@ -196,7 +196,14 @@ function Entrenamiento() {
                     type="number"
                     placeholder={"Meta: " + datoCambia.pesoAnterior}
                     className="text-center border border-gray-300 rounded-lg px-2 py-1 focus:ring focus:ring-blue-200"
-                    onChange={(e) => setPesoActual(e.target.value)}
+                    value={datoCambia.pesoActual} // Vincula el input con el valor del estado
+                    onChange={(e) =>
+                      setDatoCambia((prev) => ({
+                        ...prev,
+                        pesoActual:
+                          e.target.value !== "" ? Number(e.target.value) : "", // Permite vaciar el campo si el input está vacío
+                      }))
+                    }
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -207,13 +214,22 @@ function Entrenamiento() {
                     type="number"
                     className="text-center border border-gray-300 rounded-lg px-2 py-1 focus:ring focus:ring-blue-200"
                     placeholder={"Meta: " + datoCambia.repeticionesAnteriores}
-                    onChange={(e) => setRepesAnteriores(e.target.value)}
+                    value={datoCambia.repeticionesActual} // Vincula el input con el valor de repeticionesActual en el estado
+                    onChange={(e) =>
+                      setDatoCambia((prev) => ({
+                        ...prev,
+                        repeticionesActual:
+                          e.target.value !== "" ? Number(e.target.value) : "", // Permite vaciar el campo si el input está vacío
+                      }))
+                    }
                   />
                 </div>
               </div>
               <div className="mt-4">
                 {calculateWeightOptions(
-                  pesoActual === "" ? datoCambia.pesoAnterior : pesoActual
+                  datoCambia.pesoActual == ""
+                    ? datoCambia.pesoAnterior
+                    : datoCambia.pesoActual
                 )}
               </div>
             </div>
@@ -233,6 +249,12 @@ function Entrenamiento() {
                 onClick={siguienteEjercicio}
               >
                 Siguiente ejercicio
+              </button>
+              <button
+                className="bg-gray-300 px-4 py-2 rounded-lg shadow hover:bg-gray-400"
+                onClick={ver}
+              >
+                ver
               </button>
             </div>
           </div>
